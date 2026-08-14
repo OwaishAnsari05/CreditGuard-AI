@@ -1,0 +1,91 @@
+body{
+
+    font-family:Arial;
+
+    background:#f4f7fb;
+
+}
+
+.container{
+
+    width:95%;
+
+    margin:auto;
+
+    margin-top:30px;
+
+}
+
+h1{
+
+    color:#17375E;
+
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:white;
+
+}
+
+th{
+
+    background:#17375E;
+
+    color:white;
+
+    padding:14px;
+
+}
+
+td{
+
+    padding:12px;
+
+    border-bottom:1px solid #ddd;
+
+    text-align:center;
+
+}
+
+tr:hover{
+
+    background:#f2f7ff;
+
+}
+
+.approved{
+
+    color:green;
+
+    font-weight:bold;
+
+}
+
+.rejected{
+
+    color:red;
+
+    font-weight:bold;
+
+}
+
+button{
+
+    padding:12px 24px;
+
+    background:#17375E;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}

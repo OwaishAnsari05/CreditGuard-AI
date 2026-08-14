@@ -1,0 +1,10 @@
+Flask
+gunicorn
+pandas==2.3.3
+numpy==2.3.5
+scikit-learn==1.7.2
+joblib==1.5.2
+lightgbm==4.7.0
+reportlab
+shap==0.52.0
+SQLAlchemy

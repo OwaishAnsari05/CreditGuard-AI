@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>📋 Prediction History</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Credit Score</th>
+                    <th>Loan</th>
+                    <th>Decision</th>
+                    <th>Default Probability</th>
+                    <th>Confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in predictions %}
+                <tr>
+                    <td>{{ row.prediction_date.strftime("%d-%m-%Y %H:%M") }}</td>
+                    <td>{{ row.applicant_name }}</td>
+                    <td>{{ row.phone }}</td>
+                    <td>{{ row.credit_score }}</td>
+                    <td>{{ row.loan_amount | inr }}</td>
+                    <td>
+                        {% if row.decision == "Loan Approved" %}
+                            <span class="approved">✅ Approved</span>
+                        {% else %}
+                            <span class="rejected">❌ Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ "%.2f"|format(row.probability) }}%</td>
+                    <td>{{ "%.2f"|format(row.confidence) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <br>
+
+        <a href="/application">
+            <button>New Prediction</button>
+        </a>
+    </div>
+
+</body>
+
+</html>

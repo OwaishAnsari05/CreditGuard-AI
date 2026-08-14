@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreditGuard AI - Loan Application</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/predict.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!--  NAVBAR  -->
+    <nav>
+        <div class="logo">
+            🏦 Credit<span>Guard AI</span>
+        </div>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/application">Apply</a></li>
+        </ul>
+    </nav>
+
+    <!--  PAGE  -->
+    <div class="main-container">
+
+        <!--  FORM  -->
+        <div class="form-card">
+            <h1>Loan Application</h1>
+
+            <form action="/predict" method="POST">
+
+                <!--  Applicant  -->
+                <h2>
+                    <i class="fa-solid fa-user"></i>
+                    Applicant Information
+                </h2>
+
+                <div class="form-grid">
+                    <div class="input-box">
+                        <label>Applicant Name</label>
+                        <input type="text" name="name" required>
+                    </div>
+
+                    <div class="input-box">
+                        <label>Phone Number</label>
+                        <input 
+                            type="tel" 
+                            name="phone" 
+                            pattern="[0-9]{10}" 
+                            maxlength="10" 
+                            placeholder="9876543210" 
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-box">
+                        <label>Age</label>
+                        <input 
+                            type="number" 
+                            name="age" 
+                            min="18" 
+                            max="80" 
+                            required
+                        >
+                    </div>
+
+                    <div class="input-box">
+                        <label>Credit Score</label>
+                        <input 
+                            type="number" 
+                            id="credit_score" 
+                            name="credit_score" 
+                            min="300" 
+                            max="850" 
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Financial  -->
+                <h2>
+                    <i class="fa-solid fa-wallet"></i>
+                    Financial Information
+                </h2>
+
+                <div class="form-grid">
+                    <div class="input-box">
+                        <label>Annual Income (₹)</label>
+                        <input 
+                            type="text" 
+                            id="income" 
+                            name="income" 
+                            placeholder="12,00,000" 
+                            onblur="formatIndianCurrency(this)" 
+                            onfocus="removeComma(this)" 
+                            required
+                        >
+                    </div>
+
+                    <div class="input-box">
+                        <label>Debt-to-Income Ratio</label>
+                        <input 
+                            type="text" 
+                            id="dtiDisplay" 
+                            value="Calculated Automatically" 
+                            readonly
+                        >
+                    </div>
+                </div>
+
+                <input type="hidden" id="hidden_dti" name="dti_ratio">
+
+                <!--  Loan  -->
+                <h2>
+                    <i class="fa-solid fa-building-columns"></i>
+                    Loan Information
+                </h2>
+
+                <div class="form-grid">
+                    <div class="input-box">
+                        <label>Loan Amount (₹)</label>
+                        <input 
+                            type="text" 
+                            id="loan" 
+                            name="loan_amount" 
+                            placeholder="20,00,000" 
+                            onblur="formatIndianCurrency(this)" 
+                            onfocus="removeComma(this)" 
+                            required
+                        >
+                    </div>
+
+                    <div class="input-box">
+                        <label>Purpose</label>
+                        <select id="purpose" name="purpose" required>
+                            <option value="">Select Purpose</option>
+                            <option value="Home Loan">Home Loan</option>
+                            <option value="Personal Loan">Personal Loan</option>
+                            <option value="Education Loan">Education Loan</option>
+                            <option value="Business Loan">Business Loan</option>
+                            <option value="Vehicle Loan">Vehicle Loan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-box">
+                        <label>Loan Term</label>
+                        <select id="term" name="loan_term" required>
+                            <option value="60">5 Years</option>
+                            <option value="120">10 Years</option>
+                            <option value="180">15 Years</option>
+                            <option value="240">20 Years</option>
+                            <option value="300">25 Years</option>
+                            <option value="360">30 Years</option>
+                        </select>
+                    </div>
+
+                    <div class="input-box">
+                        <label>Interest Rate</label>
+                        <input 
+                            type="text" 
+                            id="rateDisplay" 
+                            readonly 
+                            value="Select Loan Purpose"
+                        >
+                        <input type="hidden" id="rate" name="interest_rate">
+                    </div>
+                </div>
+
+                <button type="submit">
+                    Predict Credit Risk
+                </button>
+
+            </form>
+        </div>
+
+        <!-- RIGHT PANEL  -->
+        <div class="summary-card">
+            <h2>Loan Summary</h2>
+
+            <div class="summary-item">
+                <p>Monthly Income</p>
+                <h3 id="monthlyIncome">₹ 0</h3>
+            </div>
+
+            <div class="summary-item">
+                <p>Estimated EMI</p>
+                <h3 id="emi">₹ 0</h3>
+            </div>
+
+            <div class="summary-item">
+                <p>Loan vs Income</p>
+                <h3 id="ratio">0 x</h3>
+            </div>
+
+            <div class="summary-item">
+                <p>Debt To Income Ratio</p>
+                <h3 id="dtiDisplay">0%</h3>
+            </div>
+
+            <div class="summary-item">
+                <p>Loan Term</p>
+                <h3 id="termDisplay">5 Years</h3>
+            </div>
+
+            <div class="summary-item">
+                <p>Status</p>
+                <h3 style="color:#2563EB;">Ready for Prediction</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <!--  JAVASCRIPT  -->
+    <script>
+        function removeComma(input) {
+            input.value = input.value.replace(/,/g, '');
+        }
+
+        function formatIndianCurrency(input) {
+            let value = input.value.replace(/,/g, '');
+            if (value === "") return;
+            value = parseFloat(value);
+            input.value = value.toLocaleString("en-IN");
+        }
+
+        function updateInterestRate() {
+            const purposeSelect = document.querySelector("select[name='purpose']");
+            const purpose = purposeSelect ? purposeSelect.value : "";
+            const credit = parseFloat(document.getElementById("credit_score").value) || 0;
+
+            let rate = 8.0;
+
+            switch (purpose) {
+                case "Home Loan":
+                    rate = 8.25;
+                    break;
+                case "Vehicle Loan":
+                    rate = 9.25;
+                    break;
+                case "Education Loan":
+                    rate = 9.50;
+                    break;
+                case "Business Loan":
+                    rate = 11.00;
+                    break;
+                case "Personal Loan":
+                    rate = 13.50;
+                    break;
+                default:
+                    rate = 8.00;
+            }
+
+            if (credit >= 800) {
+                rate -= 1.5;
+            } else if (credit >= 750) {
+                rate -= 1.0;
+            } else if (credit >= 700) {
+                rate -= 0.5;
+            } else if (credit > 0 && credit < 600) {
+                rate += 2.0;
+            }
+
+            rate = Math.max(rate, 6.5);
+
+            document.getElementById("rate").value = rate;
+            document.getElementById("rateDisplay").value = purpose ? (rate + " %") : "Select Loan Purpose";
+
+            updateSummary();
+        }
+
+        function calculateEMI(loan, rate, term) {
+            let monthlyRate = rate / 100 / 12;
+
+            if (monthlyRate === 0) {
+                return loan / term;
+            }
+
+            let emi = (loan * monthlyRate * Math.pow(1 + monthlyRate, term)) /
+                      (Math.pow(1 + monthlyRate, term) - 1);
+
+            return emi;
+        }
+
+        function calculateDTI(emi, monthlyIncome) {
+            if (monthlyIncome <= 0) {
+                return 0;
+            }
+            return (emi / monthlyIncome) * 100;
+        }
+
+        function updateSummaryCards(monthlyIncome, emi, ratio, dti, term) {
+            document.getElementById("monthlyIncome").innerText = "₹ " + monthlyIncome.toFixed(0);
+            document.getElementById("emi").innerText = "₹ " + emi.toFixed(0);
+            document.getElementById("ratio").innerText = ratio.toFixed(2) + " x";
+            document.getElementById("dtiDisplay").innerText = dti.toFixed(2) + "%";
+
+            let years = term / 12;
+            document.getElementById("termDisplay").innerText = years + (years === 1 ? " Year" : " Years");
+        }
+
+        function updateSummary() {
+            let income = parseFloat(
+                document.getElementById("income").value.replace(/,/g, "")
+            ) || 0;
+
+            let loan = parseFloat(
+                document.getElementById("loan").value.replace(/,/g, "")
+            ) || 0;
+
+            let rate = parseFloat(document.getElementById("rate").value) || 8;
+            let term = parseInt(document.getElementById("term").value) || 60;
+
+            let monthlyIncome = income / 12;
+            let emi = calculateEMI(loan, rate, term);
+
+            let ratio = 0;
+            if (monthlyIncome > 0) {
+                ratio = loan / monthlyIncome;
+            }
+
+            let dti = calculateDTI(emi, monthlyIncome);
+
+            // Hidden value sent to Flask (0-1 scale)
+            document.getElementById("hidden_dti").value = (dti / 100).toFixed(4);
+
+            updateSummaryCards(monthlyIncome, emi, ratio, dti, term);
+        }
+
+        document.querySelectorAll("input").forEach(x =>
+            x.addEventListener("input", updateSummary)
+        );
+
+        document.querySelectorAll("select").forEach(x => {
+            x.addEventListener("change", () => {
+                updateInterestRate();
+                updateSummary();
+            });
+        });
+
+        document.getElementById("credit_score").addEventListener("input", updateInterestRate);
+
+        updateInterestRate();
+
+        document.querySelector("form").addEventListener("submit", function () {
+            document.getElementById("income").value =
+                document.getElementById("income").value.replace(/,/g, '');
+
+            document.getElementById("loan").value =
+                document.getElementById("loan").value.replace(/,/g, '');
+        });
+    </script>
+
+</body>
+
+</html>

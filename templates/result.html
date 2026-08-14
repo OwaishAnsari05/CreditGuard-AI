@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CreditGuard-AI - Credit Risk Result</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/result.css') }}">
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+         <!--  HEADER -->
+    
+
+    <div class="card header-card">
+
+        <h1>🏦 CreditGuard-AI</h1>
+
+        <p>AI Credit Risk Assessment Report</p>
+
+    </div>
+
+
+    <!-- APPLICANT INFORMATION -->
+
+    <div class="card">
+
+        <h2>👤 Applicant Information</h2>
+
+        <div class="grid">
+
+            <div class="metric">
+
+                <h3>Applicant Name</h3>
+
+                <p>{{ applicant_name }}</p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Phone Number</h3>
+
+                <p>{{ phone }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!--  DECISION  -->
+
+    <div class="card decision-card">
+
+        {% if result.prediction == 0 %}
+
+            <div class="decision-banner approved">
+
+                <span>✓</span>
+
+                LOAN APPROVED
+
+            </div>
+
+        {% else %}
+
+            <div class="decision-banner rejected">
+
+                <span>✕</span>
+
+                LOAN REJECTED
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- Confidence + Probability -->
+
+        <div class="grid decision-grid">
+
+
+            <div class="metric">
+
+                <h3>Confidence</h3>
+
+                <div class="progress">
+
+                    <div
+                        class="progress-fill confidence-fill"
+                        style="width: {{ result.confidence }}%;">
+                    </div>
+
+                </div>
+
+                <p class="progress-value">
+
+                    {{ result.confidence }}%
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Predicted Default Risk</h3>
+
+                <div class="progress">
+
+                    <div
+                        class="progress-fill probability-fill"
+                        style="width: {{ result.probability }}%;">
+                    </div>
+
+                </div>
+
+                <p class="progress-value">
+
+                    {{ result.probability }}%
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- AI Decision -->
+
+        <div class="ai-decision">
+
+            <h3>AI Decision</h3>
+
+            <p class="decision-text">
+
+                {{ result.decision }}
+
+            </p>
+
+            <p class="decision-reason">
+
+                {{ decision_reason }}
+
+            </p>
+
+        </div>
+
+
+        <!-- Risk Level -->
+
+        <div class="risk-section">
+
+            <h3>Risk Level</h3>
+
+            <div class="risk-badge">
+
+                {{ result.risk }}
+
+            </div>
+
+        </div>
+
+
+        <!-- Threshold -->
+
+        <div class="threshold-info">
+
+            <span>Decision Threshold</span>
+
+            <strong>65%</strong>
+
+        </div>
+
+    </div>
+
+
+         # LOAN ANALYSIS
+    
+
+    <div class="card">
+
+        <h2>💰 Loan Analysis</h2>
+
+        <div class="grid">
+
+
+            <div class="metric">
+
+                <h3>Monthly Income</h3>
+
+                <p>
+
+                    {{ metrics.monthly_income|inr }}
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Monthly EMI</h3>
+
+                <p>
+
+                    {{ metrics.monthly_emi|inr }}
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Total Interest</h3>
+
+                <p>
+
+                    {{ metrics.total_interest|inr }}
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Total Repayment</h3>
+
+                <p>
+
+                    {{ metrics.total_payment|inr }}
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- DECISION FACTORS -->
+
+    <div class="card">
+
+        <h2>📊 Decision Factors</h2>
+
+        <div class="grid">
+
+
+            <div class="metric">
+
+                <h3>Loan vs Income</h3>
+
+                <p>
+
+                    {{ metrics.loan_vs_income }}×
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>EMI Affordability</h3>
+
+                <p>
+
+                    {{ metrics.emi_ratio }}%
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Credit Score Rating</h3>
+
+                <p>
+
+                    {{ metrics.credit_label }}
+
+                </p>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Affordability</h3>
+
+                <p>
+
+                    {{ metrics.affordability }}
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!--  BUTTONS  -->
+
+    <div class="card button-card">
+
+        <a href="/application">
+
+            <button>
+
+                New Prediction
+
+            </button>
+
+        </a>
+
+
+        <a href="/download_report">
+
+            <button>
+
+                Download AI Report
+
+            </button>
+
+        </a>
+
+    </div>
+
+
+    <!--  FOOTER -->
+
+    <footer>
+
+        <p>
+
+            CreditGuard-AI • AI Powered Credit Risk Assessment
+
+        </p>
+
+    </footer>
+
+
+</div>
+
+</body>
+
+</html>
