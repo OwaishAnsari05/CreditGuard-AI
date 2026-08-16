@@ -1,5 +1,10 @@
+import os
+
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase.pdfmetrics import registerFontFamily
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -8,6 +13,89 @@ from reportlab.platypus import (
     TableStyle
 )
 
+
+# FONT SETUP
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
+
+FONT_DIR = os.path.join(BASE_DIR, "fonts")
+
+REGULAR_FONT = os.path.join(
+    FONT_DIR,
+    "DejaVuSans.ttf"
+)
+
+BOLD_FONT = os.path.join(
+    FONT_DIR,
+    "DejaVuSans-Bold.ttf"
+)
+
+
+pdfmetrics.registerFont(
+    TTFont(
+        "DejaVuSans",
+        REGULAR_FONT
+    )
+)
+
+pdfmetrics.registerFont(
+    TTFont(
+        "DejaVuSans-Bold",
+        BOLD_FONT
+    )
+)
+
+registerFontFamily(
+    "DejaVuSans",
+    normal="DejaVuSans",
+    bold="DejaVuSans-Bold"
+)
+
+
+# INDIAN CURRENCY FORMATTER
+
+def format_inr(value):
+    try:
+        value = float(value)
+
+        negative = value < 0
+        value = abs(value)
+
+        # Keep exactly 2 decimal places
+        integer_part, decimal_part = f"{value:.2f}".split(".")
+
+        # Indian numbering system
+        if len(integer_part) > 3:
+
+            last_three = integer_part[-3:]
+            remaining = integer_part[:-3]
+
+            groups = []
+
+            while remaining:
+                groups.insert(0, remaining[-2:])
+                remaining = remaining[:-2]
+
+            integer_part = ",".join(groups) + "," + last_three
+
+        result = f"₹{integer_part}.{decimal_part}"
+
+        if negative:
+            result = "-" + result
+
+        return result
+
+    except (ValueError, TypeError):
+        return str(value)
+
+
+# PDF REPORT
 
 class PDFReport:
 
@@ -27,9 +115,17 @@ class PDFReport:
         decision_summary
     ):
 
-        doc = SimpleDocTemplate(filename)
+        doc = SimpleDocTemplate(
+            filename
+        )
 
         styles = getSampleStyleSheet()
+
+        # Use Unicode-compatible font
+        styles["Title"].fontName = "DejaVuSans-Bold"
+        styles["Heading2"].fontName = "DejaVuSans-Bold"
+        styles["Heading3"].fontName = "DejaVuSans-Bold"
+        styles["BodyText"].fontName = "DejaVuSans"
 
         elements = []
 
@@ -37,7 +133,9 @@ class PDFReport:
 
         elements.append(
             Paragraph(
-                "<b><font size=20 color='blue'>CreditGuard AI</font></b>",
+                "<b><font size=20 color='blue'>"
+                "CreditGuard AI"
+                "</font></b>",
                 styles["Title"]
             )
         )
@@ -49,7 +147,9 @@ class PDFReport:
             )
         )
 
-        elements.append(Spacer(1, 20))
+        elements.append(
+            Spacer(1, 20)
+        )
 
         # APPLICANT INFORMATION
 
@@ -72,23 +172,51 @@ class PDFReport:
 
         ]
 
-        table = Table(applicant_table, colWidths=[180, 280])
+        table = Table(
+            applicant_table,
+            colWidths=[180, 280]
+        )
 
-        table.setStyle(TableStyle([
+        table.setStyle(
+            TableStyle([
 
-            ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    1,
+                    colors.grey
+                ),
 
-            ("BACKGROUND", (0, 0), (0, -1), colors.lightblue),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (0, -1),
+                    colors.lightblue
+                ),
 
-            ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+                (
+                    "FONTNAME",
+                    (0, 0),
+                    (-1, -1),
+                    "DejaVuSans-Bold"
+                ),
 
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10)
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                )
 
-        ]))
+            ])
+        )
 
         elements.append(table)
 
-        elements.append(Spacer(1, 20))
+        elements.append(
+            Spacer(1, 20)
+        )
 
         # LOAN DETAILS
 
@@ -101,39 +229,90 @@ class PDFReport:
 
         loan_table = [
 
-            ["Annual Income", f"₹ {income:,.2f}"],
+            [
+                "Annual Income",
+                format_inr(income)
+            ],
 
-            ["Loan Amount", f"₹ {loan_amount:,.2f}"],
+            [
+                "Loan Amount",
+                format_inr(loan_amount)
+            ],
 
-            ["Interest Rate", f"{interest_rate}%"],
+            [
+                "Interest Rate",
+                f"{interest_rate}%"
+            ],
 
-            ["Loan Term", f"{loan_term} Months"],
+            [
+                "Loan Term",
+                f"{loan_term} Months"
+            ],
 
-            ["Monthly EMI", f"₹ {metrics['monthly_emi']:,.2f}"],
+            [
+                "Monthly EMI",
+                format_inr(
+                    metrics["monthly_emi"]
+                )
+            ],
 
-            ["Loan vs Income", f"{metrics['loan_vs_income']} x"],
+            [
+                "Loan vs Income",
+                f"{metrics['loan_vs_income']} x"
+            ],
 
-            ["EMI Ratio", f"{metrics['emi_ratio']} %"]
+            [
+                "EMI Ratio",
+                f"{metrics['emi_ratio']} %"
+            ]
 
         ]
 
-        table = Table(loan_table, colWidths=[180, 280])
+        table = Table(
+            loan_table,
+            colWidths=[180, 280]
+        )
 
-        table.setStyle(TableStyle([
+        table.setStyle(
+            TableStyle([
 
-            ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    1,
+                    colors.grey
+                ),
 
-            ("BACKGROUND", (0, 0), (0, -1), colors.beige),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (0, -1),
+                    colors.beige
+                ),
 
-            ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+                (
+                    "FONTNAME",
+                    (0, 0),
+                    (-1, -1),
+                    "DejaVuSans-Bold"
+                ),
 
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10)
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                )
 
-        ]))
+            ])
+        )
 
         elements.append(table)
 
-        elements.append(Spacer(1, 20))
+        elements.append(
+            Spacer(1, 20)
+        )
 
         # AI RESULT
 
@@ -146,33 +325,73 @@ class PDFReport:
 
         result_table = [
 
-            ["Decision", result["decision"]],
+            [
+                "Decision",
+                result["decision"]
+            ],
 
-            ["Confidence", f"{result['confidence']} %"],
+            [
+                "Confidence",
+                f"{result['confidence']} %"
+            ],
 
-            ["Probability of Default", f"{result['probability']} %"],
+            [
+                "Probability of Default",
+                f"{result['probability']} %"
+            ],
 
-            ["Risk Level", result["risk"]]
+            [
+                "Risk Level",
+                result["risk"]
+            ]
 
         ]
 
-        table = Table(result_table, colWidths=[180, 280])
+        table = Table(
+            result_table,
+            colWidths=[180, 280]
+        )
 
-        table.setStyle(TableStyle([
+        table.setStyle(
+            TableStyle([
 
-            ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    1,
+                    colors.grey
+                ),
 
-            ("BACKGROUND", (0, 0), (0, -1), colors.lightgreen),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (0, -1),
+                    colors.lightgreen
+                ),
 
-            ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+                (
+                    "FONTNAME",
+                    (0, 0),
+                    (-1, -1),
+                    "DejaVuSans-Bold"
+                ),
 
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10)
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                )
 
-        ]))
+            ])
+        )
 
         elements.append(table)
 
-        elements.append(Spacer(1, 20))
+        elements.append(
+            Spacer(1, 20)
+        )
 
         # AI DECISION SUMMARY
 
@@ -192,7 +411,9 @@ class PDFReport:
                 )
             )
 
-        elements.append(Spacer(1, 20))
+        elements.append(
+            Spacer(1, 20)
+        )
 
         # FOOTER
 
@@ -209,6 +430,8 @@ class PDFReport:
                 styles["BodyText"]
             )
         )
+
+        # BUILD PDF
 
         doc.build(elements)
 
